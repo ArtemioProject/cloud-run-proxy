@@ -1,10 +1,16 @@
 FROM node:18-alpine
 
+# Directorio
 WORKDIR /app
 
-COPY proxy3.js .
+# Copiar archivos
+COPY proxy.js .
 COPY run.sh .
+
 RUN chmod +x run.sh
+
+# Puerto obligatorio de Cloud Run
+ENV PORT=8080
 
 EXPOSE 8080
 
