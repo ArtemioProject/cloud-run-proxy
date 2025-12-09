@@ -1,4 +1,4 @@
-/** 
+/**
  * WebSocket TCP Proxy para Cloud Run
  * Compatible con payload HTTP Injector antiguo.
  * Autor: ChatGPT para Artemio
@@ -23,8 +23,11 @@ console.log("[INFO] WebSocket Proxy CloudRun");
 console.log("[INFO] Permitidos: 80 y 443");
 console.log("[INFO] VPS destino:", DHOST);
 
-// Servidor HTTP (Cloud Run obliga)
-const server = http.createServer();
+// Cloud Run necesita responder a GET /
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("CloudRun WS Proxy OK\n");
+});
 
 // Evento WS Upgrade
 server.on("upgrade", (req, socket) => {
@@ -44,7 +47,6 @@ server.on("upgrade", (req, socket) => {
         `Sec-WebSocket-Accept: ${accept}\r\n\r\n`
     );
 
-    // Siempre redirigir hacia puerto 80 por defecto
     const remotePort = ALLOWED_PORTS[req.headers["x-port"]] || 80;
 
     console.log(`[INFO] Cliente conectado → redirigiendo al VPS ${DHOST}:${remotePort}`);
@@ -54,7 +56,7 @@ server.on("upgrade", (req, socket) => {
         port: remotePort
     });
 
-    // WS → Destino TCP
+    // WS → TCP
     socket.on("data", frame => {
         if (frame[0] === 0x81 || frame[0] === 0x82) {
             const len = frame[1] & 0x7f;
@@ -68,13 +70,12 @@ server.on("upgrade", (req, socket) => {
         }
     });
 
-    // Destino TCP → WS
+    // TCP → WS
     remote.on("data", chunk => {
         const header = Buffer.from([0x82, chunk.length]);
         socket.write(Buffer.concat([header, chunk]));
     });
 
-    // Manejo de errores
     remote.on("error", () => socket.destroy());
     socket.on("error", () => remote.destroy());
     socket.on("close", () => remote.destroy());
