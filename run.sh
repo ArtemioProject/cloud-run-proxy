@@ -1,3 +1,3 @@
 #!/bin/sh
-echo "Starting Node TCP/WS Proxy on port $PORT"
-node proxy.js
+echo "Iniciando proxy..."
+node proxy3.js
