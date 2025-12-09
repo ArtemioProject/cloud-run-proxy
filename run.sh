@@ -1,3 +1,3 @@
-#!/bin/sh
-echo "Iniciando proxy..."
-node proxy3.js
+#!/bin/bash
+echo "[INFO] Iniciando servidor WebSocket Proxy..."
+node proxy.js
